@@ -1,0 +1,118 @@
+.complaints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.complaint-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: 0.2s ease;
+}
+
+.complaint-card:hover {
+  transform: translateY(-5px);
+}
+
+.complaint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.in\ progress {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.status.resolved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.complaint-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  margin-top: 15px;
+  border-radius: 8px;
+}
+
+.location {
+  font-size: 14px;
+  margin-top: 10px;
+  color: #666;
+}
+
+.description {
+  margin-top: 8px;
+}
+
+.complaint-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 500px;
+}
+
+.complaint-form input,
+.complaint-form textarea {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.complaint-form button {
+  padding: 10px;
+  background: #2c7be5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.complaint-form button:hover {
+  background: #1a5fc2;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.officer-actions {
+  margin-top: 10px;
+}
+
+.officer-actions textarea {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+
+.officer-actions button {
+  margin-right: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+}

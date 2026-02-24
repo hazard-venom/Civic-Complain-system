@@ -23,8 +23,12 @@ export default function AssignOfficer({ complaintId, onAssigned }) {
   };
 
   return (
-    <div>
-      <select onChange={e => setSelected(e.target.value)}>
+    <div className="assign-row">
+      <select
+        className="assign-select"
+        onChange={e => setSelected(e.target.value)}
+        value={selected}
+      >
         <option value="">Assign Officer</option>
         {officers.map(o => (
           <option key={o.id} value={o.id}>
@@ -33,7 +37,7 @@ export default function AssignOfficer({ complaintId, onAssigned }) {
         ))}
       </select>
 
-      <button onClick={assign}>Assign</button>
+      <button className="assign-btn" onClick={assign}>Assign</button>
     </div>
   );
 }

@@ -8,11 +8,12 @@ class Complaint(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255))
     category = Column(String(100))
+    priority = Column(String(20), default="Low")
     description = Column(Text)
     location = Column(String(255))
 
-    #latitude = Column(Float, nullable=True)
-    #longitude = Column(Float, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     image = Column(String(255), nullable=True)
     status = Column(String(50), default="Pending")

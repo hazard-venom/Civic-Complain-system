@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
-import DashboardLayout from "../layout/DashboardLayout";
 import "../styles/complaints.css";
 
 export default function MyComplaints() {
@@ -25,14 +24,11 @@ export default function MyComplaints() {
   };
 
   return (
-    <DashboardLayout title="My Complaints">
+    <section className="panel-section">
       {loading && <p>Loading complaints...</p>}
-
       {error && <p className="error">{error}</p>}
 
-      {!loading && complaints.length === 0 && (
-        <p>No complaints filed yet.</p>
-      )}
+      {!loading && complaints.length === 0 && <p>No complaints filed yet.</p>}
 
       <div className="complaints-grid">
         {complaints.map((c) => (
@@ -44,7 +40,9 @@ export default function MyComplaints() {
               </span>
             </div>
 
-            <p className="location">📍 {c.location}</p>
+            <p className="location">Location: {c.location || "Location not provided"}</p>
+            <p><b>Category:</b> {c.category}</p>
+            <p><b>Priority:</b> {c.priority || "Low"}</p>
             <p className="description">{c.description}</p>
 
             {c.image ? (
@@ -67,6 +65,6 @@ export default function MyComplaints() {
           </div>
         ))}
       </div>
-    </DashboardLayout>
+    </section>
   );
 }

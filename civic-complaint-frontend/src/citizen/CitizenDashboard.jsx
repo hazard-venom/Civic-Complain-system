@@ -1,50 +1,31 @@
 import { useState } from "react";
 import CreateComplaint from "../complaints/CreateComplaint";
 import MyComplaints from "../complaints/MyComplaints";
+import DashboardLayout from "../layout/DashboardLayout";
+import "../styles/dashboard.css";
 
 export default function CitizenDashboard() {
   const [activeTab, setActiveTab] = useState("create");
 
-  const logout = () => {
-    localStorage.clear();
-    window.location.reload();
-  };
-
   return (
-    <div>
-      <div style={{ padding: "20px", background: "#2c7be5", color: "white" }}>
-        <h2>Civic Complaint System</h2>
+    <DashboardLayout title="Citizen Dashboard">
+      <div className="tabs-row">
         <button
-          onClick={logout}
-          style={{
-            float: "right",
-            padding: "6px 12px",
-            background: "white",
-            border: "none",
-            cursor: "pointer"
-          }}
+          className={`tab-btn ${activeTab === "create" ? "active" : ""}`}
+          onClick={() => setActiveTab("create")}
         >
-          Logout
-        </button>
-      </div>
-
-      <div style={{ padding: "20px" }}>
-        <button onClick={() => setActiveTab("create")}>
           File Complaint
         </button>
-
         <button
+          className={`tab-btn ${activeTab === "my" ? "active" : ""}`}
           onClick={() => setActiveTab("my")}
-          style={{ marginLeft: "10px" }}
         >
           My Complaints
         </button>
-
-        <hr style={{ margin: "20px 0" }} />
-
-        {activeTab === "create" && <CreateComplaint />}
-        {activeTab === "my" && <MyComplaints />}
       </div>
-    </div>
+
+      {activeTab === "create" && <CreateComplaint />}
+      {activeTab === "my" && <MyComplaints />}
+    </DashboardLayout>
   );
 }

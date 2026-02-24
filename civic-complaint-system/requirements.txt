@@ -6,3 +6,6 @@ python-jose
 passlib[bcrypt]
 python-multipart
 python-dotenv
+requests
+pandas
+scikit-learn

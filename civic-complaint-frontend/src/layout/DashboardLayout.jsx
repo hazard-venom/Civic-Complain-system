@@ -8,7 +8,10 @@ export default function DashboardLayout({ title, children }) {
 
       <div className="dashboard">
         <main className="content">
-          <h2>{title}</h2>
+          <div className="page-heading">
+            <h2>{title}</h2>
+            <p>Report, manage, and resolve civic issues faster.</p>
+          </div>
           {children}
         </main>
       </div>

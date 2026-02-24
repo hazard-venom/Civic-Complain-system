@@ -1,5 +1,7 @@
 export default function Navbar() {
   const role = localStorage.getItem("role");
+  const roleLabel =
+    role === "citizen" ? "Citizen" : role === "admin" ? "Admin" : "Officer";
 
   const logout = () => {
     localStorage.clear();
@@ -7,31 +9,19 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={styles.nav}>
-      <h3>Civic Complaint System</h3>
+    <nav className="navbar">
+      <div className="navbar-brand">
+        <h3>Civic Complaint System</h3>
+        <span className="role-pill">{roleLabel}</span>
+      </div>
 
-      <div style={styles.links}>
-        {role === "citizen" && <span>My Complaints</span>}
+      <div className="navbar-links">
+        {role === "citizen" && <span>Citizen Dashboard</span>}
         {role === "admin" && <span>Admin Dashboard</span>}
         {role === "officer" && <span>Officer Dashboard</span>}
 
-        <button onClick={logout}>Logout</button>
+        <button className="logout-btn" onClick={logout}>Logout</button>
       </div>
     </nav>
   );
 }
-
-const styles = {
-  nav: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "10px 20px",
-    background: "#1976d2",
-    color: "white",
-  },
-  links: {
-    display: "flex",
-    gap: "15px",
-    alignItems: "center",
-  },
-};

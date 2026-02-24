@@ -6,6 +6,13 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.complaint import Complaint
 from app.utils.jwt_handler import get_current_user
+from app.utils.geocode import reverse_geocode
+from app.utils.ai_model import (
+    calculate_priority_score,
+    choose_higher_priority,
+    predict_complaint,
+    score_to_priority,
+)
 #from app.utils.image_gps import extract_gps
 #from app.utils.geocode import reverse_geocode
 
@@ -30,15 +37,32 @@ def get_db():
 @router.post("/", status_code=201)
 def create_complaint(
     title: str = Form(...),
-    category: str = Form(...),
+    category: str = Form(""),
     description: str = Form(...),
-    location: str = Form(...),
+    location: str = Form(""),
+    latitude: float | None = Form(None),
+    longitude: float | None = Form(None),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     if current_user["role"] != "citizen":
         raise HTTPException(403, "Only citizens can file complaints")
+
+    combined_text = f"{title} {description}"
+    predicted_category, predicted_priority = predict_complaint(combined_text)
+    rule_priority = score_to_priority(calculate_priority_score(combined_text))
+    final_priority = choose_higher_priority(predicted_priority, rule_priority)
+    final_category = category.strip() if category and category.strip() else predicted_category
+
+    cleaned_location = location.strip() if location and location.strip() else ""
+    if not cleaned_location and latitude is not None and longitude is not None:
+        try:
+            cleaned_location = reverse_geocode(latitude, longitude)
+        except Exception:
+            cleaned_location = ""
+    if not cleaned_location:
+        cleaned_location = "Location not provided"
 
     image_path = None
     #latitude = None
@@ -82,11 +106,12 @@ def create_complaint(
     # -----------------------------
     complaint = Complaint(
         title=title,
-        category=category,
+        category=final_category,
+        priority=final_priority,
         description=description,
-        #location=final_location,
-        #latitude=latitude,
-        #longitude=longitude,
+        location=cleaned_location,
+        latitude=latitude,
+        longitude=longitude,
         image=image_path,
         citizen_id=current_user["user_id"]
     )
@@ -98,6 +123,11 @@ def create_complaint(
     return {
         "message": "Complaint submitted successfully",
         "complaint_id": complaint.id,
+        "category": complaint.category,
+        "priority": complaint.priority,
+        "location": complaint.location,
+        "latitude": complaint.latitude,
+        "longitude": complaint.longitude,
         #"location": final_location,
         #"latitude": latitude,
         #"longitude": longitude,

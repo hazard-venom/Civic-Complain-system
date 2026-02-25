@@ -27,6 +27,8 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.access_token);
       localStorage.setItem("role", res.data.role);
+      localStorage.setItem("name", res.data.name || "User");
+      localStorage.setItem("phone", res.data.phone || "");
       window.location.reload();
     } catch (err) {
       setError("Invalid email or password.");
@@ -43,48 +45,48 @@ export default function Login() {
     <div className="auth-container">
       <div className="auth-shell">
         <section className="auth-hero">
-          <h1>Civic Complaint System</h1>
-          <p>Report local issues quickly and track resolution in one place.</p>
+          <div className="auth-logo"><span className="auth-logo-badge">C</span> Civic</div>
+          <h1>Civic Complaint Management System</h1>
+          <p>Join the platform to report and track local issues efficiently.</p>
           <ul>
-            <li>Smart category and priority assistance</li>
-            <li>Live location and photo-based reporting</li>
-            <li>Citizen, officer, and admin workflows</li>
+            <li>Easy complaint submission</li>
+            <li>Transparent status tracking</li>
+            <li>Real-time notifications</li>
           </ul>
         </section>
 
-        <form className="auth-card auth-form" onSubmit={handleLogin}>
-          <h2 className="auth-title">Welcome back</h2>
-          <p className="auth-subtitle">Sign in to continue.</p>
+        <div className="auth-form-wrap">
+          <form className="auth-card auth-form" onSubmit={handleLogin}>
+            <h2 className="auth-title">Welcome back</h2>
+            <p className="auth-subtitle">Sign in to continue.</p>
 
-          <input
-            type="email"
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
-          {error && <p className="auth-error">{error}</p>}
+            {error && <p className="auth-error">{error}</p>}
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Login"}
-          </button>
+            <button type="submit" disabled={loading}>
+              {loading ? "Signing in..." : "Login"}
+            </button>
 
-          <p className="auth-switch">
-            Don&apos;t have an account?{" "}
-            <span className="auth-link" onClick={() => setShowRegister(true)}>
-              Register
-            </span>
-          </p>
-        </form>
+            <p className="auth-switch">
+              Don&apos;t have an account? <span className="auth-link" onClick={() => setShowRegister(true)}>Register</span>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );

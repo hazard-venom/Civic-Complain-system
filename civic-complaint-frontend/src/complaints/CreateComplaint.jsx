@@ -45,9 +45,10 @@ export default function CreateComplaint() {
   const [isLocating, setIsLocating] = useState(false);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
+  const [successInfo, setSuccessInfo] = useState(null);
 
-  const markerPosition =
-    latitude !== null && longitude !== null ? [latitude, longitude] : null;
+  const markerPosition = latitude !== null && longitude !== null ? [latitude, longitude] : null;
   const mapCenter = useMemo(() => markerPosition || DEFAULT_CENTER, [markerPosition]);
 
   const setCoordinates = (lat, lng) => {
@@ -79,6 +80,19 @@ export default function CreateComplaint() {
     );
   };
 
+  const resetForm = () => {
+    setTitle("");
+    setCategory("");
+    setDescription("");
+    setLocation("");
+    setLatitude(null);
+    setLongitude(null);
+    setGpsStatus("");
+    setImage(null);
+    setPreview(null);
+    setFileInputKey((prev) => prev + 1);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -96,14 +110,20 @@ export default function CreateComplaint() {
     }
 
     try {
-      await api.post("/complaints/", formData, {
+      const res = await api.post("/complaints/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      alert("Complaint submitted successfully!");
-      window.location.reload();
+      setSuccessInfo({
+        complaintId: res.data.complaint_id,
+        trackingId: res.data.tracking_id || `ID-${res.data.complaint_id}`,
+        emailCopySent: Boolean(res.data.email_copy_sent),
+        smsSent: Boolean(res.data.sms_sent),
+        smsStatusMessage: res.data.sms_status_message || "",
+      });
+      resetForm();
     } catch (err) {
       console.error(err);
       alert("Failed to submit complaint");
@@ -112,19 +132,38 @@ export default function CreateComplaint() {
 
   return (
     <section className="panel-section">
+      {successInfo && (
+        <div className="success-card">
+          <h4>Complaint Submitted</h4>
+          <p>
+            <b>Complaint Number:</b> {successInfo.trackingId}
+          </p>
+          <p>
+            <b>Reference ID:</b> {successInfo.complaintId}
+          </p>
+          <p>
+            {successInfo.emailCopySent
+              ? "A copy has been sent to your registered email."
+              : "Email copy is not configured on server yet."}
+          </p>
+          <p>
+            {successInfo.smsSent
+              ? "Complaint ID notification was sent to your mobile number."
+              : successInfo.smsStatusMessage || "SMS notification is disabled or SMS provider is not configured."}
+          </p>
+        </div>
+      )}
+
       <form className="complaint-form" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Complaint title"
+          value={title}
           required
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        <select
-          value={category}
-          required
-          onChange={(e) => setCategory(e.target.value)}
-        >
+        <select value={category} required onChange={(e) => setCategory(e.target.value)}>
           <option value="">Select category</option>
           {CATEGORIES.map((item) => (
             <option key={item} value={item}>
@@ -135,6 +174,7 @@ export default function CreateComplaint() {
 
         <textarea
           placeholder="Describe the issue in detail"
+          value={description}
           required
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -190,21 +230,22 @@ export default function CreateComplaint() {
         </div>
 
         <input
+          key={fileInputKey}
           type="file"
           accept="image/*"
           onChange={(e) => {
-            setImage(e.target.files[0]);
-            setPreview(URL.createObjectURL(e.target.files[0]));
+            const selectedFile = e.target.files?.[0];
+            if (!selectedFile) {
+              setImage(null);
+              setPreview(null);
+              return;
+            }
+            setImage(selectedFile);
+            setPreview(URL.createObjectURL(selectedFile));
           }}
         />
 
-        {preview && (
-          <img
-            src={preview}
-            alt="Preview"
-            className="preview-image"
-          />
-        )}
+        {preview && <img src={preview} alt="Preview" className="preview-image" />}
 
         <button type="submit">Submit Complaint</button>
       </form>

@@ -4,6 +4,12 @@ import DashboardLayout from "../layout/DashboardLayout";
 import AssignOfficer from "./AssignOfficer";
 import "../styles/complaints.css";
 
+const MENU_ITEMS = [
+  { key: "dashboard", label: "Dashboard" },
+  { key: "assign", label: "Assign Officer" },
+  { key: "reports", label: "Reports" },
+];
+
 const getImageUrl = (imagePath) => {
   if (!imagePath) return "";
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
@@ -13,6 +19,7 @@ const getImageUrl = (imagePath) => {
 };
 
 export default function AdminDashboard() {
+  const [activeMenu, setActiveMenu] = useState("dashboard");
   const [complaints, setComplaints] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
@@ -29,7 +36,8 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    api.get("/complaints")
+    api
+      .get("/complaints")
       .then((res) => setComplaints(res.data))
       .catch((err) => console.error(err));
   }, [refresh]);
@@ -42,19 +50,32 @@ export default function AdminDashboard() {
     return { total, pending, inProgress, resolved };
   }, [complaints]);
 
+  const visibleComplaints = useMemo(() => {
+    if (activeMenu === "assign") {
+      return complaints.filter((c) => c.status !== "Resolved");
+    }
+    return complaints;
+  }, [activeMenu, complaints]);
+
   return (
-    <DashboardLayout title="Admin Dashboard">
+    <DashboardLayout
+      title="Admin Dashboard"
+      subtitle="Review complaints and assign them to officers."
+      menuItems={MENU_ITEMS}
+      activeMenu={activeMenu}
+      onMenuChange={setActiveMenu}
+    >
       <div className="summary-grid">
-        <div className="summary-card"><span>Total</span><strong>{stats.total}</strong></div>
-        <div className="summary-card"><span>Pending</span><strong>{stats.pending}</strong></div>
-        <div className="summary-card"><span>In Progress</span><strong>{stats.inProgress}</strong></div>
-        <div className="summary-card"><span>Resolved</span><strong>{stats.resolved}</strong></div>
+        <div className="summary-card summary-card-blue"><span>Total</span><strong>{stats.total}</strong></div>
+        <div className="summary-card summary-card-orange"><span>Pending</span><strong>{stats.pending}</strong></div>
+        <div className="summary-card summary-card-green"><span>In Progress</span><strong>{stats.inProgress}</strong></div>
+        <div className="summary-card summary-card-pink"><span>Resolved</span><strong>{stats.resolved}</strong></div>
       </div>
 
-      {complaints.length === 0 && <p>No complaints available.</p>}
+      {visibleComplaints.length === 0 && <p>No complaints available.</p>}
 
       <div className="complaints-grid">
-        {complaints.map((c) => (
+        {visibleComplaints.map((c) => (
           <div className="complaint-card admin-card" key={c.id}>
             <div className="complaint-header">
               <h4>{c.title}</h4>
@@ -96,10 +117,7 @@ export default function AdminDashboard() {
 
             {c.status !== "Resolved" && (
               <div className="assign-wrap">
-                <AssignOfficer
-                  complaintId={c.id}
-                  onAssigned={() => setRefresh(!refresh)}
-                />
+                <AssignOfficer complaintId={c.id} onAssigned={() => setRefresh(!refresh)} />
               </div>
             )}
           </div>

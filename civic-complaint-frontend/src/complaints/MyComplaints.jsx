@@ -30,39 +30,26 @@ export default function MyComplaints() {
 
       {!loading && complaints.length === 0 && <p>No complaints filed yet.</p>}
 
-      <div className="complaints-grid">
+      <div className="complaint-list">
         {complaints.map((c) => (
-          <div className="complaint-card" key={c.id}>
-            <div className="complaint-header">
+          <article className="complaint-list-item" key={c.id}>
+            <div className="complaint-list-main">
               <h4>{c.title}</h4>
+              <p>{c.description}</p>
+              <small>{c.location || "Location not provided"}</small>
+              <p>
+                <b>Complaint No:</b> {c.tracking_id || `ID-${c.id}`}
+              </p>
+            </div>
+
+            <div className="complaint-list-side">
               <span className={`status ${c.status?.toLowerCase() || "pending"}`}>
                 {c.status || "Pending"}
               </span>
+              <span className="meta-chip">{c.category}</span>
+              <span className="meta-chip">{c.priority || "Low"}</span>
             </div>
-
-            <p className="location">Location: {c.location || "Location not provided"}</p>
-            <p><b>Category:</b> {c.category}</p>
-            <p><b>Priority:</b> {c.priority || "Low"}</p>
-            <p className="description">{c.description}</p>
-
-            {c.image ? (
-              <img
-                className="complaint-image"
-                src={`http://127.0.0.1:8000/media/${c.image}`}
-                alt="Complaint"
-                onError={(e) => {
-                  e.target.src =
-                    "https://via.placeholder.com/300x200?text=Image+Not+Available";
-                }}
-              />
-            ) : (
-              <img
-                className="complaint-image"
-                src="https://via.placeholder.com/300x200?text=No+Image"
-                alt="No Image"
-              />
-            )}
-          </div>
+          </article>
         ))}
       </div>
     </section>

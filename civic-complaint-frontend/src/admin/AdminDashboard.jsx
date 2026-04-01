@@ -8,6 +8,7 @@ const MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard" },
   { key: "assign", label: "Assign Officer" },
   { key: "reports", label: "Reports" },
+  { key: "accounts", label: "Accounts" },
 ];
 
 const getImageUrl = (imagePath) => {
@@ -21,6 +22,8 @@ const getImageUrl = (imagePath) => {
 export default function AdminDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [complaints, setComplaints] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
 
@@ -42,6 +45,12 @@ export default function AdminDashboard() {
       .catch((err) => console.error(err));
   }, [refresh]);
 
+  useEffect(() => {
+    if (activeMenu === "accounts") {
+      fetchAccounts();
+    }
+  }, [activeMenu]);
+
   const stats = useMemo(() => {
     const total = complaints.length;
     const pending = complaints.filter((c) => (c.status || "Pending") === "Pending").length;
@@ -57,6 +66,29 @@ export default function AdminDashboard() {
     return complaints;
   }, [activeMenu, complaints]);
 
+  const fetchAccounts = async () => {
+    setLoadingAccounts(true);
+    try {
+      const res = await api.get("/admin/accounts");
+      setAccounts(res.data || []);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load accounts");
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
+
+  const promoteToOfficer = async (userId) => {
+    try {
+      const res = await api.put(`/admin/promote/${userId}`);
+      alert(res.data?.message || "Role updated");
+      fetchAccounts();
+    } catch (err) {
+      alert(err?.response?.data?.detail || "Failed to update role");
+    }
+  };
+
   return (
     <DashboardLayout
       title="Admin Dashboard"
@@ -65,18 +97,20 @@ export default function AdminDashboard() {
       activeMenu={activeMenu}
       onMenuChange={setActiveMenu}
     >
-      <div className="summary-grid">
-        <div className="summary-card summary-card-blue"><span>Total</span><strong>{stats.total}</strong></div>
-        <div className="summary-card summary-card-orange"><span>Pending</span><strong>{stats.pending}</strong></div>
-        <div className="summary-card summary-card-green"><span>In Progress</span><strong>{stats.inProgress}</strong></div>
-        <div className="summary-card summary-card-pink"><span>Resolved</span><strong>{stats.resolved}</strong></div>
-      </div>
+      {activeMenu !== "accounts" && (
+        <>
+          <div className="summary-grid">
+            <div className="summary-card summary-card-blue"><span>Total</span><strong>{stats.total}</strong></div>
+            <div className="summary-card summary-card-orange"><span>Pending</span><strong>{stats.pending}</strong></div>
+            <div className="summary-card summary-card-green"><span>In Progress</span><strong>{stats.inProgress}</strong></div>
+            <div className="summary-card summary-card-pink"><span>Resolved</span><strong>{stats.resolved}</strong></div>
+          </div>
 
-      {visibleComplaints.length === 0 && <p>No complaints available.</p>}
+          {visibleComplaints.length === 0 && <p>No complaints available.</p>}
 
-      <div className="complaints-grid">
-        {visibleComplaints.map((c) => (
-          <div className="complaint-card admin-card" key={c.id}>
+          <div className="complaints-grid">
+            {visibleComplaints.map((c) => (
+              <div className="complaint-card admin-card" key={c.id}>
             <div className="complaint-header">
               <h4>{c.title}</h4>
               <span className={`status ${c.status?.toLowerCase() || "pending"}`}>
@@ -115,14 +149,45 @@ export default function AdminDashboard() {
               />
             )}
 
-            {c.status !== "Resolved" && (
-              <div className="assign-wrap">
-                <AssignOfficer complaintId={c.id} onAssigned={() => setRefresh(!refresh)} />
+                {c.status !== "Resolved" && (
+                  <div className="assign-wrap">
+                    <AssignOfficer complaintId={c.id} onAssigned={() => setRefresh(!refresh)} />
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
+
+      {activeMenu === "accounts" && (
+        <section className="panel-section">
+          <h3>All Created Accounts</h3>
+          {loadingAccounts && <p>Loading accounts...</p>}
+          {!loadingAccounts && accounts.length === 0 && <p>No users found.</p>}
+          <div className="complaint-list">
+            {accounts.map((user) => (
+              <article className="complaint-list-item" key={user.id}>
+                <div className="complaint-list-main">
+                  <h4>{user.name}</h4>
+                  <p>{user.email}</p>
+                  <small>{user.phone || "No phone"}</small>
+                </div>
+                <div className="complaint-list-side">
+                  <span className="meta-chip">Role: {user.role}</span>
+                  {user.role === "citizen" ? (
+                    <button className="primary-btn" onClick={() => promoteToOfficer(user.id)}>
+                      Make Officer
+                    </button>
+                  ) : (
+                    <span className="resolved-note">No action</span>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {selectedImage && (
         <div className="image-modal-overlay" onClick={() => setSelectedImage("")}>

@@ -7,7 +7,6 @@ const MENU_ITEMS = [
   { key: "dashboard", label: "Dashboard" },
   { key: "assigned", label: "Assigned" },
   { key: "updates", label: "Status Updates" },
-  { key: "accounts", label: "Accounts" },
 ];
 
 const getImageUrl = (imagePath) => {
@@ -21,8 +20,6 @@ const getImageUrl = (imagePath) => {
 export default function OfficerDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [complaints, setComplaints] = useState([]);
-  const [accounts, setAccounts] = useState([]);
-  const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [remarks, setRemarks] = useState({});
   const [selectedImage, setSelectedImage] = useState("");
 
@@ -40,12 +37,6 @@ export default function OfficerDashboard() {
   useEffect(() => {
     fetchComplaints();
   }, []);
-
-  useEffect(() => {
-    if (activeMenu === "accounts") {
-      fetchAccounts();
-    }
-  }, [activeMenu]);
 
   const fetchComplaints = async () => {
     try {
@@ -69,29 +60,6 @@ export default function OfficerDashboard() {
       fetchComplaints();
     } catch (err) {
       alert("Failed to update");
-    }
-  };
-
-  const fetchAccounts = async () => {
-    setLoadingAccounts(true);
-    try {
-      const res = await api.get("/officer/accounts");
-      setAccounts(res.data || []);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load accounts");
-    } finally {
-      setLoadingAccounts(false);
-    }
-  };
-
-  const promoteToOfficer = async (userId) => {
-    try {
-      const res = await api.put(`/officer/promote/${userId}`);
-      alert(res.data?.message || "Role updated");
-      fetchAccounts();
-    } catch (err) {
-      alert(err?.response?.data?.detail || "Failed to update role");
     }
   };
 
@@ -121,15 +89,6 @@ export default function OfficerDashboard() {
       activeMenu={activeMenu}
       onMenuChange={setActiveMenu}
     >
-      <section className="panel-section">
-        <div className="action-row">
-          <span className="meta-chip">Accounts Manager</span>
-          <button className="primary-btn" onClick={() => setActiveMenu("accounts")}>
-            Open Accounts
-          </button>
-        </div>
-      </section>
-
       <div className="tabs-row">
         <button
           className={`tab-btn ${activeMenu === "dashboard" ? "active" : ""}`}
@@ -149,28 +108,20 @@ export default function OfficerDashboard() {
         >
           Status Updates
         </button>
-        <button
-          className={`tab-btn ${activeMenu === "accounts" ? "active" : ""}`}
-          onClick={() => setActiveMenu("accounts")}
-        >
-          Accounts
-        </button>
       </div>
 
-      {activeMenu !== "accounts" && (
-        <>
-          <div className="summary-grid">
-            <div className="summary-card summary-card-blue"><span>Total Assigned</span><strong>{stats.total}</strong></div>
-            <div className="summary-card summary-card-orange"><span>Pending</span><strong>{stats.pending}</strong></div>
-            <div className="summary-card summary-card-green"><span>In Progress</span><strong>{stats.inProgress}</strong></div>
-            <div className="summary-card summary-card-pink"><span>Resolved</span><strong>{stats.resolved}</strong></div>
-          </div>
+      <div className="summary-grid">
+        <div className="summary-card summary-card-blue"><span>Total Assigned</span><strong>{stats.total}</strong></div>
+        <div className="summary-card summary-card-orange"><span>Pending</span><strong>{stats.pending}</strong></div>
+        <div className="summary-card summary-card-green"><span>In Progress</span><strong>{stats.inProgress}</strong></div>
+        <div className="summary-card summary-card-pink"><span>Resolved</span><strong>{stats.resolved}</strong></div>
+      </div>
 
-          {visibleComplaints.length === 0 && <p>No complaints available.</p>}
+      {visibleComplaints.length === 0 && <p>No complaints available.</p>}
 
-          <div className="complaints-grid">
-            {visibleComplaints.map((c) => (
-              <div key={c.id} className="complaint-card officer-card">
+      <div className="complaints-grid">
+        {visibleComplaints.map((c) => (
+          <div key={c.id} className="complaint-card officer-card">
                 <div className="complaint-header">
                   <h4>{c.title}</h4>
                   <span className={`status ${c.status?.toLowerCase() || "pending"}`}>
@@ -232,40 +183,9 @@ export default function OfficerDashboard() {
                     <p className="resolved-note">This complaint is already resolved.</p>
                   )}
                 </div>
-              </div>
-            ))}
           </div>
-        </>
-      )}
-
-      {activeMenu === "accounts" && (
-        <section className="panel-section">
-          <h3>All Created Accounts</h3>
-          {loadingAccounts && <p>Loading accounts...</p>}
-          {!loadingAccounts && accounts.length === 0 && <p>No users found.</p>}
-          <div className="complaint-list">
-            {accounts.map((user) => (
-              <article className="complaint-list-item" key={user.id}>
-                <div className="complaint-list-main">
-                  <h4>{user.name}</h4>
-                  <p>{user.email}</p>
-                  <small>{user.phone || "No phone"}</small>
-                </div>
-                <div className="complaint-list-side">
-                  <span className="meta-chip">Role: {user.role}</span>
-                  {user.role === "citizen" ? (
-                    <button className="primary-btn" onClick={() => promoteToOfficer(user.id)}>
-                      Make Officer
-                    </button>
-                  ) : (
-                    <span className="resolved-note">No action</span>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+        ))}
+      </div>
 
       {selectedImage && (
         <div className="image-modal-overlay" onClick={() => setSelectedImage("")}>

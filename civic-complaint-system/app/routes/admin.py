@@ -46,6 +46,33 @@ def get_officers(db: Session = Depends(get_db)):
     return officers
 
 
+@router.get("/accounts")
+def list_accounts(db: Session = Depends(get_db)):
+    users = db.query(User).order_by(User.id.asc()).all()
+    return users
+
+
+@router.put("/promote/{user_id}")
+def promote_citizen_to_officer(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    if user.role == "admin":
+        raise HTTPException(400, "Admin role cannot be changed from admin panel")
+
+    if user.role == "officer":
+        return {"message": "User is already an officer", "user_id": user.id, "role": user.role}
+
+    if user.role != "citizen":
+        raise HTTPException(400, "Only citizens can be promoted")
+
+    user.role = "officer"
+    db.commit()
+
+    return {"message": "Citizen promoted to officer successfully", "user_id": user.id, "role": user.role}
+
+
 class AssignRequest(BaseModel):
     officer_id: int
 

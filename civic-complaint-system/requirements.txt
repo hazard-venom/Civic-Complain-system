@@ -2,10 +2,12 @@ fastapi
 uvicorn
 sqlalchemy
 pydantic
+pydantic-settings
 python-jose
 passlib[bcrypt]
 python-multipart
 python-dotenv
 requests
+pymysql
 pandas
 scikit-learn
